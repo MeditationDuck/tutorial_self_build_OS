@@ -7,6 +7,8 @@
      5                              <1> BOOT_SIZE       equ     (1024 * 8)              ;ブートコードサイズ
      6                              <1> SECT_SIZE       equ     (512)                   ;セクタサイズ
      7                              <1> BOOT_SECT       equ     (BOOT_SIZE/SECT_SIZE)   ;ブートプログラムのセクタサイズ
+     8                              <1> 
+     9                              <1> E820_RECORD_SIZE    equ     20
      3                                  %include        "../include/macro.s"
      1                              <1> %macro      cdecl 1-*.nolist
      2                              <1> 
