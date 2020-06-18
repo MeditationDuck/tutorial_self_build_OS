@@ -263,10 +263,68 @@ stage_6:
         mov     ax, 0x0012      ; vga 640x480
         int     0x10            ;ビデオモードの設定
 
-        jmp     $
+        jmp     stage_7
 
 .s0	db	"6th stage...", 0x0A, 0x0D, 0x0A, 0x0D
-	db	" [Push SPACE key to protect mode...]", 0x0A, 0x0D, 0        
+	db	" [Push SPACE key to protect mode...]", 0x0A, 0x0D, 0      
+
+; セグメントディスクリプタの配列
+
+ALIGN 4, db 0
+GDT:            dq      0x00_0_0_0_0_000000_0000        ;NULL
+.cs:            dq      0x00_C_F_9_A_000000_FFFF        ;CODE 4G
+.ds:            dq      0x00_C_F_9_2_000000_FFFF        ;DATA 4G
+.gdt_end:
+
+; セレクタ
+SEL_CODE        equ     .cs - GDT                       ; コード用セレクタ
+SEL_DATA        equ     .ds - GDT                       ; データ用
+
+; GDT
+GDTR:           dw      GDT.gdt_end - GDT - 1           ; ディスクリプタテーブルのリミット
+                dd      GDT                             ; ディスクリプタテーブルのアドレス
+;IDT    ; 割り込みディスクリプタテーブル
+IDTR:           dw      0               ; リミット
+                dd      0               ; アドレス
+
+stage_7:
+        cli
+        ; GDT ロード
+        lgdt    [GDTR]
+        lidt    [IDTR]
+
+        ; プロテクトモードに移行
+
+        mov     eax, cr0
+        or      ax, 1
+        mov     cr0, eax
+
+        jmp     $ + 2
+
+[BITS 32]
+        DB      0x66                    ; オペランドサイズオーバーライドプレフィックス
+        jmp     SEL_CODE:CODE_32
+
+; 32ビットコード開始
+CODE_32:
+        ;セレクタを初期化
+        mov     ax, SEL_CODE
+        mov     ds, ax
+        mov     es, ax
+        mov     fs, ax
+        mov     gs, ax
+        mov     ss, ax
+        
+        ; カーネル部をコピー
+        mov     ecx, (KERNEL_SIZE) / 4          ; 4バイトごと
+        mov     esi, BOOT_END                   ;0X0000_9C00
+        mov     edi, KERNEL_LOAD                ;0X0010_1000
+        cld                                     ;dfクリア
+        rep movsd                               ;while (--ecx) 
+
+        jmp     KERNEL_LOAD
+
+
 
 ;パディング     ブートファイルのサイズを定義したとおりにする
         times BOOT_SIZE - ($ - $$)  db 0
