@@ -13,5 +13,5 @@ kernel:
 
 ; パディング
 
-    times  KERNEL_SIZE -($ - $$)    db 0
+    times  KERNEL_SIZE - ($ - $$) db 0x00
     

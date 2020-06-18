@@ -35,7 +35,7 @@ lba_chs:
         div     byte [si + drive.sect]      ; ah = ax % 最大セクタ数
 
         movzx   dx, ah                      ; dx = セクタ番号
-        inc dx                              ; 自然数にするため
+        inc     dx                              ; 自然数にするため
 
         mov     ah, 0x00                    ; AX = ヘッド位置
 

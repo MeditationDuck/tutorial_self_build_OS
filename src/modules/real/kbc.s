@@ -7,7 +7,7 @@ KBC_Data_Write:
 .10L:
         in      al, 0x64        ; AL = inp(0x64) KBCステータス
         test    al, 0x02        ; ZF = AL & 0x02  書き込み可能か？
-        loopz  .10L
+        loopnz  .10L
 
         cmp     cx, 0
         jz     .20E
@@ -26,6 +26,7 @@ KBC_Data_Read:
         push    bp
         mov     bp, sp
         push    cx
+        push    di
 
         mov     cx, 0
 .10L:
@@ -36,7 +37,7 @@ KBC_Data_Read:
         cmp     cx, 0
         jz     .20E
 
-        mov     al, 0x00        ; ah = 0x00
+        mov     ah, 0x00        ; ah = 0x00
         in      al, 0x60        ; al = inp(0x60)
 
         mov     di, [bp + 4]    ; di = ptr
@@ -44,6 +45,7 @@ KBC_Data_Read:
 .20E:
         mov     ax, cx
         
+        pop     di
         pop     cx
         mov     sp, bp
         pop     bp
@@ -58,7 +60,7 @@ KBC_Cmd_Write:         ; KBC_Data_Writeとほぼ同じ
 .10L:
         in      al, 0x64        
         test    al, 0x02        
-        loopz  .10L
+        loopnz  .10L
 
         cmp     cx, 0
         jz     .20E

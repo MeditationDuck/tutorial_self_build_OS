@@ -1,0 +1,126 @@
+     1                                  %include       "../include/define.s"
+     1                              <1> 
+     2                              <1> BOOT_SIZE       equ     (1024 * 8)              ;ブートコードサイズ
+     3                              <1> KERNEL_SIZE     equ     (1024 * 8)   
+     4                              <1> BOOT_LOAD       equ     0x7c00                  ;ブートプログラムのロード位置
+     5                              <1>                                                 ;これがないと0x0000にロードされることになってしまうが
+     6                              <1>                                                 ;BIOSそこはがすでに使っている領域である
+     7                              <1> 
+     8                              <1> BOOT_END        equ     (BOOT_LOAD + BOOT_SIZE)
+     9                              <1> SECT_SIZE       equ     (512)                   ;セクタサイズ
+    10                              <1> BOOT_SECT       equ     (BOOT_SIZE/SECT_SIZE)   ;ブートプログラムのセクタサイズ
+    11                              <1> KERNEL_SECT     equ     (KERNEL_SIZE/SECT_SIZE)
+    12                              <1> 
+    13                              <1> E820_RECORD_SIZE    equ     20
+    14                              <1> 
+    15                              <1> KERNEL_LOAD     equ     0x0010_1000
+    16                              <1> 
+    17                              <1>   
+     2                                  %include       "../include/macro.s"
+     1                              <1> %macro      cdecl 1-*.nolist
+     2                              <1> 
+     3                              <1>     %rep    %0 - 1
+     4                              <1>         push    %{-1:-1}
+     5                              <1>         %rotate -1
+     6                              <1>     %endrep
+     7                              <1>     %rotate -1
+     8                              <1> 
+     9                              <1>         call    %1
+    10                              <1> 
+    11                              <1>     %if 1 < %0
+    12                              <1>         add     sp, (__BITS__>>3) * (%0 - 1)
+    13                              <1>     %endif
+    14                              <1> 
+    15                              <1> %endmacro
+    16                              <1> 
+    17                              <1> struc drive
+    18 00000000 <res 00000002>      <1>         .no     resw    1
+    19 00000002 <res 00000002>      <1>         .cyln   resw    1
+    20 00000004 <res 00000002>      <1>         .head   resw    1
+    21 00000006 <res 00000002>      <1>         .sect   resw    1
+    22                              <1> endstruc
+    23                              <1> 
+     3                                  
+     4                                      ORG      KERNEL_LOAD
+     5                                  
+     6                                  [BITS 32]
+     7                                  
+     8                                  ; エントリーポイント
+     9                                  
+    10                                  kernel:
+    11                                      
+    12                                      ; フォントアドレスを取得
+    13 00000000 BE007E0000                      mov     esi, BOOT_LOAD + SECT_SIZE
+    14 00000005 0FB706                          movzx   eax, word [esi + 0]
+    15 00000008 0FB75E02                        movzx   ebx, word [esi + 2]
+    16 0000000C C1E004                          shl     eax, 4
+    17 0000000F 01D8                            add     eax,ebx
+    18 00000011 A3[D8000000]                    mov     [FONT_ADR], eax
+    19                                  
+    20                                      ; 8ビットの横線
+    21 00000016 B407                            mov     ah, 0x07        ; 書き込みプレーン
+    22 00000018 B002                            mov     al, 0x02        ; マップマスクレジスタ
+    23 0000001A 66BAC403                        mov     dx, 0x03c4      ; シーケンサー制御ポート
+    24 0000001E 66EF                            out     dx, ax          ; ポート出力
+    25                                  
+    26 00000020 C60500000A00FF                  mov     [0x000A_0000 + 0], byte 0xFF  ; 書き込み
+    27                                  
+    28 00000027 B404                            mov     ah, 0x04    
+    29 00000029 6689C2                          mov     dx, ax
+    30 0000002C C60501000A00FF                  mov     [0x000A_0000 + 1], byte 0xFF 
+    31                                  
+    32 00000033 B402                            mov     ah, 0x02
+    33 00000035 66EF                            out     dx, ax
+    34 00000037 C60502000A00FF                  mov     [0x000A_0000 + 2], byte 0xFF 
+    35                                  
+    36 0000003E B401                            mov     ah, 0x01
+    37 00000040 66EF                            out     dx, ax
+    38 00000042 C60503000A00FF                  mov     [0x000A_0000 + 3], byte 0xFF 
+    39                                  
+    40                                      ;画面を横切る線
+    41 00000049 B402                            mov     ah, 0x02
+    42 0000004B 66EF                            out     dx, ax
+    43                                  
+    44 0000004D 8D3D50000A00                    lea     edi, [0x000A_0000 + 80]
+    45 00000053 B950000000                      mov     ecx, 80
+    46 00000058 B0FF                            mov     al, 0xFF
+    47 0000005A F3AA                            rep stosb
+    48                                      
+    49                                      ;二行目にドットの形
+    50 0000005C BF01000000              	mov		edi, 1							; EDI  = 行数;
+    51                                  
+    52 00000061 C1E708                  	shl		edi, 8							; EDI *= 256;
+    53 00000064 8DBCBF00000A00          	lea		edi, [edi * 4 + edi + 0xA_0000]	; EDI  = VRAMアドレス;
+    54                                  
+    55 0000006B 66C707FF00              	mov		[edi + (80 * 0)], word 0xFF
+    56 00000070 66C74750FF00            	mov		[edi + (80 * 1)], word 0xFF
+    57 00000076 66C787A0000000FF00      	mov		[edi + (80 * 2)], word 0xFF
+    58 0000007F 66C787F0000000FF00      	mov		[edi + (80 * 3)], word 0xFF
+    59 00000088 66C78740010000FF00      	mov		[edi + (80 * 4)], word 0xFF
+    60 00000091 66C78790010000FF00      	mov		[edi + (80 * 5)], word 0xFF
+    61 0000009A 66C787E0010000FF00      	mov		[edi + (80 * 6)], word 0xFF
+    62 000000A3 66C78730020000FF00      	mov		[edi + (80 * 7)], word 0xFF
+    63                                  
+    64                                          ;3行目に文字を描画
+    65 000000AC BE41000000                      mov     esi, 'A'
+    66 000000B1 C1E604                          shl     esi, 4
+    67 000000B4 0335[D8000000]                  add     esi, [FONT_ADR] 
+    68 000000BA BF02000000                      mov     edi,   2
+    69 000000BF C1E708                          shl     edi, 8
+    70 000000C2 8DBCBF00000A00                  lea     edi, [edi * 4 + edi + 0xA_0000]
+    71                                  
+    72 000000C9 B910000000                      mov     ecx, 16
+    73                                  
+    74                                  .10L:
+    75 000000CE A4                              movsb
+    76 000000CF 83C74F                          add     edi, 80 - 1
+    77 000000D2 E2FA                            loop    .10L
+    78                                  
+    79 000000D4 EBFE                            jmp     $
+    80                                  
+    81 000000D6 00<rept>                ALIGN 4, db 0
+    82 000000D8 00000000                FONT_ADR: dd 0
+    83                                  ; パディング
+    84                                  
+    85 000000DC 00<rept>                    times KERNEL_SIZE - ($ - $$) db 0x00
+    86                                      

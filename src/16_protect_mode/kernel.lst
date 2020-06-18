@@ -53,5 +53,5 @@
     13                                  
     14                                  ; パディング
     15                                  
-    16 00000002 00<rept>                    times  KERNEL_SIZE -($ - $$)    db 0
+    16 00000002 00<rept>                    times  KERNEL_SIZE - ($ - $$) db 0x00
     17                                      
