@@ -62,12 +62,23 @@ kernel:
 		cdecl	draw_rect, 400, 250, 150, 150, 0x05
 		cdecl	draw_rect, 350, 400, 300, 100, 0x06
 
+		;---------------------------------------
+		; 時刻の表示
+		;---------------------------------------
+.10L:											; do
+												; {
+		cdecl	rtc_get_time, RTC_TIME			;   EAX = get_time(&RTC_TIME);
+		cdecl	draw_time, 72, 0, 0x0700,		\
+							dword [RTC_TIME]
+		jmp		.10L							; } while (1);
+
         jmp     $
 
 .s0         db  " Hello, Kernel! ", 0
 
 ALIGN 4, db 0
 FONT_ADR: dd 0
+RTC_TIME:	dd	0
 ;   モジュール
 %include	"../modules/protect/vga.s"
 %include	"../modules/protect/draw_char.s"
@@ -77,6 +88,9 @@ FONT_ADR: dd 0
 %include	"../modules/protect/draw_pixel.s"
 %include	"../modules/protect/draw_line.s"
 %include	"../modules/protect/draw_rect.s"
+%include	"../modules/protect/itoa.s"
+%include	"../modules/protect/rtc.s"
+%include	"../modules/protect/draw_time.s"
 
 ; パディング
 
