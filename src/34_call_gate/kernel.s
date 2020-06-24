@@ -32,6 +32,7 @@ kernel:
 		;---------------------------------------
 		set_desc	GDT.tss_0, TSS_0			; // タスク0用TSSの設定
 		set_desc	GDT.tss_1, TSS_1			; // タスク1用TSSの設定
+		set_gate 	GDT.call_gate, call_gate
 
 		;---------------------------------------
 		; LDTの設定
@@ -64,6 +65,7 @@ kernel:
 		set_vect	0x20, int_timer				; // 割り込み処理の登録：タイマー
 		set_vect	0x21, int_keyboard			; // 割り込み処理の登録：KBC
 		set_vect	0x28, int_rtc				; // 割り込み処理の登録：RTC
+		set_vect 	0x81, trap_gate_81, word 0xEF00
 
 		;---------------------------------------
 		; デバイスの割り込み許可
