@@ -1,67 +1,67 @@
 ;************************************************************************
-;	リングバッファからデータを取得
+;	�����O�o�b�t�@����f�[�^���擾
 ;========================================================================
-;■書式		: DWORD ring_rd(buff, data);
+;������		: DWORD ring_rd(buff, data);
 ;
-;■引数
-;	buff	: リングバッファ
-;	data	: 読み込んだデータの保存先アドレス
+;������
+;	buff	: �����O�o�b�t�@
+;	data	: �ǂݍ��񂾃f�[�^�̕ۑ���A�h���X
 ;
-;■戻り値	: データあり(0以外)、データ無し(0)
+;���߂�l	: �f�[�^����(0�ȊO)�A�f�[�^����(0)
 ;************************************************************************
 ring_rd:
 		;---------------------------------------
-		; 【スタックフレームの構築】
+		; �y�X�^�b�N�t���[���̍\�z�z
 		;---------------------------------------
 												; ------|--------
-												;    +12| リングデータ
-												;    + 8| データアドレス
+												;    +12| �����O�f�[�^
+												;    + 8| �f�[�^�A�h���X
 												; ------|--------
-												;    + 4| EIP（戻り番地）
-		push	ebp								; EBP+ 0| EBP（元の値）
+												;    + 4| EIP�i�߂�Ԓn�j
+		push	ebp								; EBP+ 0| EBP�i���̒l�j
 		mov		ebp, esp						; ------+--------
 
 		;---------------------------------------
-		; 【レジスタの保存】
+		; �y���W�X�^�̕ۑ��z
 		;---------------------------------------
 		push	ebx
 		push	esi
 		push	edi
 
 		;---------------------------------------
-		; 引数を取得
+		; �������擾
 		;---------------------------------------
-		mov		esi, [ebp + 8]					; ESI = リングバッファ;
-		mov		edi, [ebp +12]					; EDI = データアドレス;
+		mov		esi, [ebp + 8]					; ESI = �����O�o�b�t�@;
+		mov		edi, [ebp +12]					; EDI = �f�[�^�A�h���X;
 
 		;---------------------------------------
-		; 読み込み位置を確認
+		; �ǂݍ��݈ʒu���m�F
 		;---------------------------------------
-		mov		eax, 0							; EAX = 0;          // データ無し
-		mov		ebx, [esi + ring_buff.rp]		; EBX = rp;         // 読み込み位置
-		cmp		ebx, [esi + ring_buff.wp]		; if (EBX != wp)    // 書き込み位置と異なる
+		mov		eax, 0							; EAX = 0;          // �f�[�^����
+		mov		ebx, [esi + ring_buff.rp]		; EBX = rp;         // �ǂݍ��݈ʒu
+		cmp		ebx, [esi + ring_buff.wp]		; if (EBX != wp)    // �������݈ʒu�ƈقȂ�
 		je		.10E							; {
 												;   
-		mov		al, [esi + ring_buff.item + ebx] ;   AL = BUFF[rp]; // キーコードを保存
+		mov		al, [esi + ring_buff.item + ebx] ;   AL = BUFF[rp]; // �L�[�R�[�h��ۑ�
 												;   
-		mov		[edi], al						;   [EDI] = AL;     // データを保存
+		mov		[edi], al						;   [EDI] = AL;     // �f�[�^��ۑ�
 												;   
-		inc		ebx								;   EBX++;          // 次の読み込み位置
-		and		ebx, RING_INDEX_MASK			;   EBX &= 0x0F     // サイズの制限
-		mov		[esi + ring_buff.rp], ebx		;   rp = EBX;       // 読み込み位置を保存
+		inc		ebx								;   EBX++;          // ���̓ǂݍ��݈ʒu
+		and		ebx, RING_INDEX_MASK			;   EBX &= 0x0F     // �T�C�Y�̐���
+		mov		[esi + ring_buff.rp], ebx		;   rp = EBX;       // �ǂݍ��݈ʒu��ۑ�
 												;   
-		mov		eax, 1							;   EAX = 1;        // データあり
+		mov		eax, 1							;   EAX = 1;        // �f�[�^����
 .10E:											; }
 
 		;---------------------------------------
-		; 【レジスタの復帰】
+		; �y���W�X�^�̕��A�z
 		;---------------------------------------
 		pop		edi
 		pop		esi
 		pop		ebx
 
 		;---------------------------------------
-		; 【スタックフレームの破棄】
+		; �y�X�^�b�N�t���[���̔j���z
 		;---------------------------------------
 		mov		esp, ebp
 		pop		ebp
@@ -69,68 +69,68 @@ ring_rd:
 		ret
 
 ;************************************************************************
-;	リングバッファにデータを格納
+;	�����O�o�b�t�@�Ƀf�[�^���i�[
 ;========================================================================
-;■書式		: DWORD ring_wr(buff, data);
+;������		: DWORD ring_wr(buff, data);
 ;
-;■引数
-;	buff	: リングバッファ
-;	data	: 書き込むデータ
+;������
+;	buff	: �����O�o�b�t�@
+;	data	: �������ރf�[�^
 ;
-;■戻り値	: 成功(0以外)、失敗(0)
+;���߂�l	: ����(0�ȊO)�A���s(0)
 ;************************************************************************
 ring_wr:
 		;---------------------------------------
-		; 【スタックフレームの構築】
+		; �y�X�^�b�N�t���[���̍\�z�z
 		;---------------------------------------
 												; ------|--------
-												;    +12| リングデータ
-												;    + 8| データ
+												;    +12| �����O�f�[�^
+												;    + 8| �f�[�^
 												; ------|--------
-												;    + 4| EIP（戻り番地）
-		push	ebp								; EBP+ 0| EBP（元の値）
+												;    + 4| EIP�i�߂�Ԓn�j
+		push	ebp								; EBP+ 0| EBP�i���̒l�j
 		mov		ebp, esp						; ------+--------
 
 		;---------------------------------------
-		; 【レジスタの保存】
+		; �y���W�X�^�̕ۑ��z
 		;---------------------------------------
 		push	ebx
 		push	ecx
 		push	esi
 
 		;---------------------------------------
-		; 引数を取得
+		; �������擾
 		;---------------------------------------
-		mov		esi, [ebp + 8]					; ESI = リングバッファ;
+		mov		esi, [ebp + 8]					; ESI = �����O�o�b�t�@;
 
 		;---------------------------------------
-		; 書き込み位置を確認
+		; �������݈ʒu���m�F
 		;---------------------------------------
-		mov		eax, 0							; EAX  = 0;         // 失敗
-		mov		ebx, [esi + ring_buff.wp]		; EBX  = wp;        // 書き込み位置
+		mov		eax, 0							; EAX  = 0;         // ���s
+		mov		ebx, [esi + ring_buff.wp]		; EBX  = wp;        // �������݈ʒu
 		mov		ecx, ebx						; ECX  = EBX;
-		inc		ecx								; ECX++;            // 次の書き込み位置
-		and		ecx, RING_INDEX_MASK			; ECX &= 0x0F       // サイズの制限
+		inc		ecx								; ECX++;            // ���̏������݈ʒu
+		and		ecx, RING_INDEX_MASK			; ECX &= 0x0F       // �T�C�Y�̐���
 												; 
-		cmp		ecx, [esi + ring_buff.rp]		; if (ECX != rp)    // 読み込み位置と異なる
+		cmp		ecx, [esi + ring_buff.rp]		; if (ECX != rp)    // �ǂݍ��݈ʒu�ƈقȂ�
 		je		.10E							; {
 												; 
-		mov		al, [ebp +12]					;   AL = データ;
+		mov		al, [ebp +12]					;   AL = �f�[�^;
 												; 
-		mov		[esi + ring_buff.item + ebx], al ;   BUFF[wp] = AL; // キーコードを保存
-		mov		[esi + ring_buff.wp], ecx		;   wp = ECX;       // 書き込み位置を保存
-		mov		eax, 1							;   EAX = 1;        // 成功
+		mov		[esi + ring_buff.item + ebx], al ;   BUFF[wp] = AL; // �L�[�R�[�h��ۑ�
+		mov		[esi + ring_buff.wp], ecx		;   wp = ECX;       // �������݈ʒu��ۑ�
+		mov		eax, 1							;   EAX = 1;        // ����
 .10E:											; }
 
 		;---------------------------------------
-		; 【レジスタの復帰】
+		; �y���W�X�^�̕��A�z
 		;---------------------------------------
 		pop		esi
 		pop		ecx
 		pop		ebx
 
 		;---------------------------------------
-		; 【スタックフレームの破棄】
+		; �y�X�^�b�N�t���[���̔j���z
 		;---------------------------------------
 		mov		esp, ebp
 		pop		ebp
@@ -138,73 +138,73 @@ ring_wr:
 		ret
 
 ;************************************************************************
-;	リングバッファ内要素の表示
+;	�����O�o�b�t�@���v�f�̕\��
 ;========================================================================
-;■書式		: void ring_show(col, row, buff);
+;������		: void ring_show(col, row, buff);
 ;
-;■引数
-;	col		: 列
-;	row		: 行
-;	buff	: リングバッファ
+;������
+;	col		: ��
+;	row		: �s
+;	buff	: �����O�o�b�t�@
 ;
-;■戻り値	: 無し
+;���߂�l	: ����
 ;************************************************************************
 draw_key:
 		;---------------------------------------
-		; 【スタックフレームの構築】
+		; �y�X�^�b�N�t���[���̍\�z�z
 		;---------------------------------------
 												; ------|--------
-												; EBP+16| リングバッファ
-												; EBP+12| Y（行）
-												; EBP+ 8| X（列）
+												; EBP+16| �����O�o�b�t�@
+												; EBP+12| Y�i�s�j
+												; EBP+ 8| X�i��j
 												; ------|--------
-		push	ebp								; EBP+ 4| EIP（戻り番地）
-		mov		ebp, esp						; EBP+ 0| EBP（元の値）
+		push	ebp								; EBP+ 4| EIP�i�߂�Ԓn�j
+		mov		ebp, esp						; EBP+ 0| EBP�i���̒l�j
 												; ------|--------
 
 		;---------------------------------------
-		; 【レジスタの保存】
+		; �y���W�X�^�̕ۑ��z
 		;---------------------------------------
 		pusha
 
 		;---------------------------------------
-		; 引数を取得
+		; �������擾
 		;---------------------------------------
-		mov		edx, [ebp + 8]					; EDX = X（列）;
-		mov		edi, [ebp +12]					; EDI = Y（行）;
-		mov		esi, [ebp +16]					; ESI = リングバッファ;
+		mov		edx, [ebp + 8]					; EDX = X�i��j;
+		mov		edi, [ebp +12]					; EDI = Y�i�s�j;
+		mov		esi, [ebp +16]					; ESI = �����O�o�b�t�@;
 
 		;---------------------------------------
-		; リングバッファの情報を取得
+		; �����O�o�b�t�@�̏����擾
 		;---------------------------------------
-		mov		ebx, [esi + ring_buff.rp]		; EBX = rp;             // 読み込み位置
+		mov		ebx, [esi + ring_buff.rp]		; EBX = rp;             // �ǂݍ��݈ʒu
 		lea		esi, [esi + ring_buff.item]		; ESI = &KEY_BUFF[EBX];
-		mov		ecx, RING_ITEM_SIZE				; ECX = RING_ITEM_SIZE; // 要素数
+		mov		ecx, RING_ITEM_SIZE				; ECX = RING_ITEM_SIZE; // �v�f��
 
 		;---------------------------------------
-		; 文字に変換しながら表示
+		; �����ɕϊ����Ȃ���\��
 		;---------------------------------------
 .10L:											; do
 												; {
-		dec		ebx								;   EBX--; // 読み込み位置
+		dec		ebx								;   EBX--; // �ǂݍ��݈ʒu
 		and		ebx, RING_INDEX_MASK			;   EBX &= RING_INDEX_MASK;
 		mov		al, [esi + ebx]					;   EAX  = KEY_BUFF[EBX];
 												;   
-		cdecl	itoa, eax, .tmp, 2, 16, 0b0100	;   // キーコードを文字列に変換
-		cdecl	draw_str, edx, edi, 0x02, .tmp	;   // 変換した文字列を表示
+		cdecl	itoa, eax, .tmp, 2, 16, 0b0100	;   // �L�[�R�[�h�𕶎���ɕϊ�
+		cdecl	draw_str, edx, edi, 0x02, .tmp	;   // �ϊ������������\��
 												;   
-		add		edx, 3							;   // 表示位置を更新（3文字分）
+		add		edx, 3							;   // �\���ʒu���X�V�i3�������j
 												;   
 		loop	.10L							;   
 .10E:											; } while (ECX--);
 
 		;---------------------------------------
-		; 【レジスタの復帰】
+		; �y���W�X�^�̕��A�z
 		;---------------------------------------
 		popa
 
 		;---------------------------------------
-		; 【スタックフレームの破棄】
+		; �y�X�^�b�N�t���[���̔j���z
 		;---------------------------------------
 		mov		esp, ebp
 		pop		ebp

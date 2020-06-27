@@ -1,87 +1,96 @@
 ;************************************************************************
-;	ãƒ”ã‚¯ã‚»ãƒ«ã®æç”»
+;	ƒsƒNƒZƒ‹‚Ì•`‰æ
 ;========================================================================
-;â– æ›¸å¼		: void draw_pixel(X, Y, color);
+;¡‘®		: void draw_pixel(X, Y, color);
 ;
-;â– å¼•æ•°
-;	X		: Xåº§æ¨™
-;	Y		: Yåº§æ¨™
-;	color	: æç”»è‰²
+;¡ˆø”
+;	X		: XÀ•W
+;	Y		: YÀ•W
+;	color	: •`‰æF
 ;
-;â– æˆ»ã‚Šå€¤	: ç„¡ã—
+;¡–ß‚è’l	: –³‚µ
 ;************************************************************************
 draw_pixel:
 		;---------------------------------------
-		; ã€ã‚¹ã‚¿ãƒƒã‚¯ãƒ•ãƒ¬ãƒ¼ãƒ ã®æ§‹ç¯‰ã€‘
+		; yƒXƒ^ƒbƒNƒtƒŒ[ƒ€‚Ì\’zz
 		;---------------------------------------
 												; ------|--------
-												; EBP+16| è‰²
+												; EBP+16| F
 												; EBP+12| Y
 												; EBP+ 8| X
 												; ------|--------
-		push	ebp								; EBP+ 4| EIPï¼ˆæˆ»ã‚Šç•ªåœ°ï¼‰
-		mov		ebp, esp						; EBP+ 0| EBPï¼ˆå…ƒã®å€¤ï¼‰
+		push	ebp								; EBP+ 4| EIPi–ß‚è”Ô’nj
+		mov		ebp, esp						; EBP+ 0| EBPiŒ³‚Ì’lj
 												; ------+--------
 		;---------------------------------------
-		; ã€ãƒ¬ã‚¸ã‚¹ã‚¿ã®ä¿å­˜ã€‘
+		; yƒŒƒWƒXƒ^‚Ì•Û‘¶z
 		;---------------------------------------
 		push	eax
 		push	ebx
 		push	ecx
 		push	edi
-        
+
 		;---------------------------------------
-		; Yåº§æ¨™ã‚’80å€ã™ã‚‹ï¼ˆ640/8ï¼‰
+		; YÀ•W‚ğ80”{‚·‚éi640/8j
 		;---------------------------------------
+		mov		edi, [ebp +12]					; EDI  = YÀ•W
+		shl		edi, 4							; EDI *= 16;
+		lea		edi, [edi * 4 + edi + 0xA_0000]	; EDI  = 0xA00000[EDI * 4 + EDI];
 
-        mov     edi, [ebp +12]
-        shl     edi, 4
-        lea     edi, [edi * 4 + edi + 0xA_0000]
+		;---------------------------------------
+		; XÀ•W‚ğ1/8‚µ‚Ä‰ÁZ
+		;---------------------------------------
+		mov		ebx, [ebp + 8]					; EBX  = XÀ•W;
+		mov		ecx, ebx						; ECX  = XÀ•W;iˆê•Û‘¶j
+		shr		ebx, 3							; EBX /= 8;
+		add		edi, ebx						; EDI += EBX;
 
-        mov     ebx, [ebp + 8]
-        mov     ecx, ebx
-        shr     ebx, 3
-        add     edi, ebx
+		;---------------------------------------
+		; XÀ•W‚ğ8‚ÅŠ„‚Á‚½—]‚è‚©‚çƒrƒbƒgˆÊ’u‚ğŒvZ
+		; (0=0x80, 1=0x40,... 7=0x01)
+		;---------------------------------------
+		and		ecx, 0x07						; ECX = X & 0x07;
+		mov		ebx, 0x80						; EBX = 0x80;
+		shr		ebx, cl							; EBX >>= ECX;
 
-        and     ecx, 0x07
-        mov     ebx, 0x80
-        shr     ebx, cl
-
-        mov     ecx, [ebp +16]
+		;---------------------------------------
+		; Fw’è
+		;---------------------------------------
+		mov		ecx, [ebp +16]					; // •\¦F
 
 %ifdef	USE_TEST_AND_SET
-		cdecl	test_and_set, IN_USE			; TEST_AND_SET(IN_USE); // ãƒªã‚½ãƒ¼ã‚¹ã®ç©ºãå¾…ã¡
+		cdecl	test_and_set, IN_USE			; TEST_AND_SET(IN_USE); // ƒŠƒ\[ƒX‚Ì‹ó‚«‘Ò‚¿
 %endif
 
 		;---------------------------------------
-		; ãƒ—ãƒ¬ãƒ¼ãƒ³æ¯ã«å‡ºåŠ›
+		; ƒvƒŒ[ƒ“–ˆ‚Éo—Í
 		;---------------------------------------
-		cdecl	vga_set_read_plane, 0x03		; // è¼åº¦(I)ãƒ—ãƒ¬ãƒ¼ãƒ³ã‚’é¸æŠ
-		cdecl	vga_set_write_plane, 0x08		; // è¼åº¦(I)ãƒ—ãƒ¬ãƒ¼ãƒ³ã‚’é¸æŠ
+		cdecl	vga_set_read_plane, 0x03		; // ‹P“x(I)ƒvƒŒ[ƒ“‚ğ‘I‘ğ
+		cdecl	vga_set_write_plane, 0x08		; // ‹P“x(I)ƒvƒŒ[ƒ“‚ğ‘I‘ğ
 		cdecl	vram_bit_copy, ebx, edi, 0x08, ecx
 
-		cdecl	vga_set_read_plane, 0x02		; // èµ¤(R)ãƒ—ãƒ¬ãƒ¼ãƒ³ã‚’é¸æŠ
-		cdecl	vga_set_write_plane, 0x04		; // èµ¤(R)ãƒ—ãƒ¬ãƒ¼ãƒ³ã‚’é¸æŠ
+		cdecl	vga_set_read_plane, 0x02		; // Ô(R)ƒvƒŒ[ƒ“‚ğ‘I‘ğ
+		cdecl	vga_set_write_plane, 0x04		; // Ô(R)ƒvƒŒ[ƒ“‚ğ‘I‘ğ
 		cdecl	vram_bit_copy, ebx, edi, 0x04, ecx
 
-		cdecl	vga_set_read_plane, 0x01		; // ç·‘(G)ãƒ—ãƒ¬ãƒ¼ãƒ³ã‚’é¸æŠ
-		cdecl	vga_set_write_plane, 0x02		; // ç·‘(G)ãƒ—ãƒ¬ãƒ¼ãƒ³ã‚’é¸æŠ
+		cdecl	vga_set_read_plane, 0x01		; // —Î(G)ƒvƒŒ[ƒ“‚ğ‘I‘ğ
+		cdecl	vga_set_write_plane, 0x02		; // —Î(G)ƒvƒŒ[ƒ“‚ğ‘I‘ğ
 		cdecl	vram_bit_copy, ebx, edi, 0x02, ecx
 
-		cdecl	vga_set_read_plane, 0x00		; // é’(B)ãƒ—ãƒ¬ãƒ¼ãƒ³ã‚’é¸æŠ
-		cdecl	vga_set_write_plane, 0x01		; // é’(B)ãƒ—ãƒ¬ãƒ¼ãƒ³ã‚’é¸æŠ
+		cdecl	vga_set_read_plane, 0x00		; // Â(B)ƒvƒŒ[ƒ“‚ğ‘I‘ğ
+		cdecl	vga_set_write_plane, 0x01		; // Â(B)ƒvƒŒ[ƒ“‚ğ‘I‘ğ
 		cdecl	vram_bit_copy, ebx, edi, 0x01, ecx
 
 
 %ifdef	USE_TEST_AND_SET
 		;---------------------------------------
-		; ãƒ†ã‚¹ãƒˆã‚¢ãƒ³ãƒ‰ã‚»ãƒƒãƒˆ
+		; ƒeƒXƒgƒAƒ“ƒhƒZƒbƒg
 		;---------------------------------------
-		mov		[IN_USE], dword 0				; å¤‰æ•°ã®ã‚¯ãƒªã‚¢
+		mov		[IN_USE], dword 0				; •Ï”‚ÌƒNƒŠƒA
 %endif
 
 		;---------------------------------------
-		; ã€ãƒ¬ã‚¸ã‚¹ã‚¿ã®å¾©å¸°ã€‘
+		; yƒŒƒWƒXƒ^‚Ì•œ‹Az
 		;---------------------------------------
 		pop		edi
 		pop		ecx
@@ -89,7 +98,7 @@ draw_pixel:
 		pop		eax
 
 		;---------------------------------------
-		; ã€ã‚¹ã‚¿ãƒƒã‚¯ãƒ•ãƒ¬ãƒ¼ãƒ ã®ç ´æ£„ã€‘
+		; yƒXƒ^ƒbƒNƒtƒŒ[ƒ€‚Ì”jŠüz
 		;---------------------------------------
 		mov		esp, ebp
 		pop		ebp

@@ -1,34 +1,34 @@
 ;************************************************************************
-;	çŸ©å½¢ã®æç”»
+;	‹éŒ`‚Ì•`‰æ
 ;========================================================================
-;â– æ›¸å¼		: void draw_rect(X0, Y0, X1, Y1, color);
+;¡‘Ž®		: void draw_rect(X0, Y0, X1, Y1, color);
 ;
-;â– å¼•æ•°
-;	X0		: å§‹ç‚¹ã®Xåº§æ¨™
-;	Y0		: å§‹ç‚¹ã®Yåº§æ¨™
-;	X1		: çµ‚ç‚¹ã®Xåº§æ¨™
-;	Y1		: çµ‚ç‚¹ã®Yåº§æ¨™
-;	color	: æç”»è‰²
+;¡ˆø”
+;	X0		: Žn“_‚ÌXÀ•W
+;	Y0		: Žn“_‚ÌYÀ•W
+;	X1		: I“_‚ÌXÀ•W
+;	Y1		: I“_‚ÌYÀ•W
+;	color	: •`‰æF
 ;
-;â– æˆ»ã‚Šå€¤	: ç„¡ã—
+;¡–ß‚è’l	: –³‚µ
 ;************************************************************************
 draw_rect:
 		;---------------------------------------
-		; ã€ã‚¹ã‚¿ãƒƒã‚¯ãƒ•ãƒ¬ãƒ¼ãƒ ã®æ§‹ç¯‰ã€‘
+		; yƒXƒ^ƒbƒNƒtƒŒ[ƒ€‚Ì\’zz
 		;---------------------------------------
 												; ------|--------
-												; EBP+24| è‰²
+												; EBP+24| F
 												; EBP+20| Y1
 												; EBP+16| X1
 												; EBP+12| Y0
 												; EBP+ 8| X0
 												; ---------------
-		push	ebp								; EBP+ 4| EIPï¼ˆæˆ»ã‚Šç•ªåœ°ï¼‰
-		mov		ebp, esp						; EBP+ 0| EBPï¼ˆå…ƒã®å€¤ï¼‰
+		push	ebp								; EBP+ 4| EIPi–ß‚è”Ô’nj
+		mov		ebp, esp						; EBP+ 0| EBPiŒ³‚Ì’lj
 												; ------|--------
 
 		;---------------------------------------
-		; ã€ãƒ¬ã‚¸ã‚¹ã‚¿ã®ä¿å­˜ã€‘
+		; yƒŒƒWƒXƒ^‚Ì•Û‘¶z
 		;---------------------------------------
 		push		eax
 		push		ebx
@@ -37,42 +37,42 @@ draw_rect:
 		push		esi
 
 		;---------------------------------------
-		; çŸ©å½¢ã‚’æç”»
+		; ‹éŒ`‚ð•`‰æ
 		;---------------------------------------
 		mov		eax, [ebp + 8]					; EAX = X0;
 		mov		ebx, [ebp +12]					; EBX = Y0;
 		mov		ecx, [ebp +16]					; ECX = X1;
 		mov		edx, [ebp +20]					; EDX = Y1;
-		mov		esi, [ebp +24]					; ESI = è‰²;
+		mov		esi, [ebp +24]					; ESI = F;
 
 		;---------------------------------------
-		; åº§æ¨™è»¸ã®å¤§å°ã‚’ç¢ºå®š
+		; À•WŽ²‚Ì‘å¬‚ðŠm’è
 		;---------------------------------------
 		cmp		eax, ecx						; if (X1 < X0)
 		jl		.10E							; {
-		xchg	eax, ecx						;   X0ã¨X1ã‚’å…¥ã‚Œæ›¿ãˆã‚‹;
+		xchg	eax, ecx						;   X0‚ÆX1‚ð“ü‚ê‘Ö‚¦‚é;
 .10E:											; }
 
 		cmp		ebx, edx						; if (Y1 < Y0)
 		jl		.20E							; {
-		xchg	ebx, edx						;   Y0ã¨Y1ã‚’å…¥ã‚Œæ›¿ãˆã‚‹;
+		xchg	ebx, edx						;   Y0‚ÆY1‚ð“ü‚ê‘Ö‚¦‚é;
 .20E:											; }
 
 		;---------------------------------------
-		; çŸ©å½¢ã‚’æç”»
+		; ‹éŒ`‚ð•`‰æ
 		;---------------------------------------
-		cdecl	draw_line, eax, ebx, ecx, ebx, esi	; ä¸Šç·š
-		cdecl	draw_line, eax, ebx, eax, edx, esi	; å·¦ç·š
+		cdecl	draw_line, eax, ebx, ecx, ebx, esi	; ãü
+		cdecl	draw_line, eax, ebx, eax, edx, esi	; ¶ü
 
-		dec		edx									; EDX--; // ä¸‹ç·šã¯1ãƒ‰ãƒƒãƒˆä¸Šã’ã‚‹
-		cdecl	draw_line, eax, edx, ecx, edx, esi	; ä¸‹ç·š
+		dec		edx									; EDX--; // ‰ºü‚Í1ƒhƒbƒgã‚°‚é
+		cdecl	draw_line, eax, edx, ecx, edx, esi	; ‰ºü
 		inc		edx
 
-		dec		ecx									; ECX--; // å³ç·šã¯1ãƒ‰ãƒƒãƒˆå·¦ã«ç§»å‹•
-		cdecl	draw_line, ecx, ebx, ecx, edx, esi	; å³ç·š
+		dec		ecx									; ECX--; // ‰Eü‚Í1ƒhƒbƒg¶‚ÉˆÚ“®
+		cdecl	draw_line, ecx, ebx, ecx, edx, esi	; ‰Eü
 
 		;---------------------------------------
-		; ã€ãƒ¬ã‚¸ã‚¹ã‚¿ã®å¾©å¸°ã€‘
+		; yƒŒƒWƒXƒ^‚Ì•œ‹Az
 		;---------------------------------------
 		pop		esi
 		pop		edx
@@ -81,7 +81,7 @@ draw_rect:
 		pop		eax
 
 		;---------------------------------------
-		; ã€ã‚¹ã‚¿ãƒƒã‚¯ãƒ•ãƒ¬ãƒ¼ãƒ ã®ç ´æ£„ã€‘
+		; yƒXƒ^ƒbƒNƒtƒŒ[ƒ€‚Ì”jŠüz
 		;---------------------------------------
 		mov		esp, ebp
 		pop		ebp

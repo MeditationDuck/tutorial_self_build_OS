@@ -1,32 +1,32 @@
 ;************************************************************************
-;	æ–‡å­—åˆ—ã®è¡¨ç¤º
+;	•¶Žš—ñ‚Ì•\Ž¦
 ;========================================================================
-;â– æ›¸å¼		: void draw_str(col, row, color, p);
+;¡‘Ž®		: void draw_str(col, row, color, p);
 ;
-;â– å¼•æ•°
-;	col		: åˆ—
-;	row		: è¡Œ
-;	color	: æç”»è‰²
-;	p		: æ–‡å­—åˆ—ã®ã‚¢ãƒ‰ãƒ¬ã‚¹
+;¡ˆø”
+;	col		: —ñ
+;	row		: s
+;	color	: •`‰æF
+;	p		: •¶Žš—ñ‚ÌƒAƒhƒŒƒX
 ;
-;â– æˆ»ã‚Šå€¤	: ç„¡ã—
+;¡–ß‚è’l	: –³‚µ
 ;************************************************************************
 draw_str:
 		;---------------------------------------
-		; ã€ã‚¹ã‚¿ãƒƒã‚¯ãƒ•ãƒ¬ãƒ¼ãƒ ã®æ§‹ç¯‰ã€‘
+		; yƒXƒ^ƒbƒNƒtƒŒ[ƒ€‚Ì\’zz
 		;---------------------------------------
 												; ------|--------
-												; EBP+20| *pï¼ˆæ–‡å­—åˆ—ã®ã‚¢ãƒ‰ãƒ¬ã‚¹ï¼‰
-												; EBP+16| colorï¼ˆè‰²ï¼‰
-												; EBP+12| rowï¼ˆè¡Œï¼‰
-												; EBP+ 8| colï¼ˆåˆ—ï¼‰
+												; EBP+20| *pi•¶Žš—ñ‚ÌƒAƒhƒŒƒXj
+												; EBP+16| coloriFj
+												; EBP+12| rowisj
+												; EBP+ 8| coli—ñj
 												; ---------------
-		push	ebp								; EBP+ 4| EIPï¼ˆæˆ»ã‚Šç•ªåœ°ï¼‰
-		mov		ebp, esp						; EBP+ 0| EBPï¼ˆå…ƒã®å€¤ï¼‰
+		push	ebp								; EBP+ 4| EIPi–ß‚è”Ô’nj
+		mov		ebp, esp						; EBP+ 0| EBPiŒ³‚Ì’lj
 												; ---------------
 
 		;---------------------------------------
-		; ã€ãƒ¬ã‚¸ã‚¹ã‚¿ã®ä¿å­˜ã€‘
+		; yƒŒƒWƒXƒ^‚Ì•Û‘¶z
 		;---------------------------------------
 		push	eax
 		push	ebx
@@ -35,45 +35,45 @@ draw_str:
 		push	esi
 
 		;---------------------------------------
-		; æ–‡å­—åˆ—ã®è¡¨ç¤º
+		; •¶Žš—ñ‚Ì•\Ž¦
 		;---------------------------------------
-		mov		ecx, [ebp + 8]					; ECX = åˆ—;
-		mov		edx, [ebp +12]					; EDX = è¡Œ;
-		movzx	ebx, word [ebp + 16]			; EBX = è¡¨ç¤ºè‰²;
-		mov		esi, [ebp +20]					; ESI = æ–‡å­—åˆ—ã®ã‚¢ãƒ‰ãƒ¬ã‚¹;
+		mov		ecx, [ebp + 8]					; ECX = —ñ;
+		mov		edx, [ebp +12]					; EDX = s;
+		movzx	ebx, word [ebp + 16]			; EBX = •\Ž¦F;
+		mov		esi, [ebp +20]					; ESI = •¶Žš—ñ‚ÌƒAƒhƒŒƒX;
 
-		cld										; DF = 0; // ã‚¢ãƒ‰ãƒ¬ã‚¹åŠ ç®—
+		cld										; DF = 0; // ƒAƒhƒŒƒX‰ÁŽZ
 .10L:											; do
 												; {
-		lodsb									;   AL = *ESI++; // æ–‡å­—ã‚’å–å¾—
+		lodsb									;   AL = *ESI++; // •¶Žš‚ðŽæ“¾
 		cmp		al, 0							;   if (0 == AL)
 		je		.10E							;     break;
 
 		;---------------------------------------
-		; 1æ–‡å­—è¡¨ç¤º
+		; 1•¶Žš•\Ž¦
 		;---------------------------------------
 %ifdef	USE_SYSTEM_CALL
-		int		0x81							;   sys_call(1, X, Y, è‰², æ–‡å­—);
+		int		0x81							;   sys_call(1, X, Y, F, •¶Žš);
 %else
 		cdecl	draw_char, ecx, edx, ebx, eax	;   draw_char();
 %endif
 
-		; æ¬¡ã®æ–‡å­—ã®ä½ç½®ã‚’èª¿æ•´
-		inc		ecx								;   ECX++;           // åˆ—ã‚’åŠ ç®—
-		cmp		ecx, 80							;   if (80 <= ECX)   // 80æ–‡å­—ä»¥ä¸Šï¼Ÿ
+		; ŽŸ‚Ì•¶Žš‚ÌˆÊ’u‚ð’²®
+		inc		ecx								;   ECX++;           // —ñ‚ð‰ÁŽZ
+		cmp		ecx, 80							;   if (80 <= ECX)   // 80•¶ŽšˆÈãH
 		jl		.12E							;   {
-		mov		ecx, 0							;     ECX = 0;       // åˆ—ã‚’åˆæœŸåŒ–
-		inc		edx								;     EDX++;         // è¡Œã‚’åŠ ç®—
-		cmp		edx, 30							;     if (30 <= EDX) // 30è¡Œä»¥ä¸Šï¼Ÿ
+		mov		ecx, 0							;     ECX = 0;       // —ñ‚ð‰Šú‰»
+		inc		edx								;     EDX++;         // s‚ð‰ÁŽZ
+		cmp		edx, 30							;     if (30 <= EDX) // 30sˆÈãH
 		jl		.12E							;     {
-		mov		edx, 0							;       EDX = 0;     // è¡Œã‚’åˆæœŸåŒ–
+		mov		edx, 0							;       EDX = 0;     // s‚ð‰Šú‰»
 												;     }
 .12E:											;   }
 		jmp		.10L							;   
 .10E:											; } while (1);
 
 		;---------------------------------------
-		; ã€ãƒ¬ã‚¸ã‚¹ã‚¿ã®å¾©å¸°ã€‘
+		; yƒŒƒWƒXƒ^‚Ì•œ‹Az
 		;---------------------------------------
 		pop		esi
 		pop		edx
@@ -82,7 +82,7 @@ draw_str:
 		pop		eax
 
 		;---------------------------------------
-		; ã€ã‚¹ã‚¿ãƒƒã‚¯ãƒ•ãƒ¬ãƒ¼ãƒ ã®ç ´æ£„ã€‘
+		; yƒXƒ^ƒbƒNƒtƒŒ[ƒ€‚Ì”jŠüz
 		;---------------------------------------
 		mov		esp, ebp
 		pop		ebp
